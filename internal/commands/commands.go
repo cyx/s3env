@@ -105,7 +105,7 @@ var (
 
 func loadS3Object() {
 	if err := envdecode.StrictDecode(&cfg); err != nil {
-		log.Fatal(err)
+		log.Fatalf("envdecode failed: %s", err)
 	}
 
 	sess, err := session.NewSession(&aws.Config{
@@ -118,19 +118,19 @@ func loadS3Object() {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("getting aws session failed: %s", err)
 	}
 
 	client = s3.New(sess)
 
 	in, err := input()
 	if err != nil {
-		log.Fatal("Err input", err)
+		log.Fatalf("error reading input: %s", err)
 	}
 	defer in.Close()
 
 	if err = json.NewDecoder(in).Decode(&s3vars); err != nil {
-		log.Fatal(err)
+		log.Fatalf("error decoding json: %s", err)
 	}
 }
 
@@ -200,13 +200,11 @@ type config struct {
 // was configured.
 func input() (io.ReadCloser, error) {
 	stat, err := os.Stdin.Stat()
-	if err != nil {
-		return nil, err
-	}
 
 	// If data is being pumped into STDIN, use that as our JSON input.
 	// Useful for easy testing.
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
+	if err == nil && (stat.Mode()&os.ModeCharDevice) == 0 {
+		fmt.Println("=====> s3env: using STDIN")
 		return ioutil.NopCloser(os.Stdin), nil
 	}
 
@@ -218,6 +216,7 @@ func input() (io.ReadCloser, error) {
 		// Cast err to awserr.Error to handle specific error codes.
 		aerr, ok := err.(awserr.Error)
 		if ok && aerr.Code() == s3.ErrCodeNoSuchKey {
+			fmt.Println("=====> s3env: object doesn't exist yet. using empty config")
 			buf := new(bytes.Buffer)
 			buf.Write([]byte("{}"))
 
@@ -225,5 +224,6 @@ func input() (io.ReadCloser, error) {
 		}
 		return nil, err
 	}
+	fmt.Println("=====> s3env: using s3 object")
 	return out.Body, nil
 }
