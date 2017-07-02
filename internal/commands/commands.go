@@ -199,15 +199,6 @@ type config struct {
 // STDIN, we'll choose that. Otherwise we'll try to load the s3 object that
 // was configured.
 func input() (io.ReadCloser, error) {
-	stat, err := os.Stdin.Stat()
-
-	// If data is being pumped into STDIN, use that as our JSON input.
-	// Useful for easy testing.
-	if err == nil && (stat.Mode()&os.ModeCharDevice) == 0 {
-		fmt.Println("=====> s3env: using STDIN")
-		return ioutil.NopCloser(os.Stdin), nil
-	}
-
 	out, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(cfg.Bucket),
 		Key:    aws.String(cfg.Key),
