@@ -173,9 +173,10 @@ func persistVars() error {
 	}
 
 	_, err := client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(cfg.Bucket),
-		Key:    aws.String(cfg.Key),
-		Body:   bytes.NewReader(buf.Bytes()),
+		Bucket:               aws.String(cfg.Bucket),
+		Key:                  aws.String(cfg.Key),
+		Body:                 bytes.NewReader(buf.Bytes()),
+		SSECustomerAlgorithm: aws.String(cfg.SSECustomerAlgorithm),
 	})
 
 	if err != nil {
@@ -193,6 +194,8 @@ type config struct {
 	AccessID  string `env:"S3ENV_AWS_ACCESS_KEY_ID,required"`
 	Region    string `env:"S3ENV_AWS_REGION,required"`
 	SecretKey string `env:"S3ENV_AWS_SECRET_ACCESS_KEY,required"`
+
+	SSECustomerAlgorithm string `env:"S3ENV_AWS_SSE_CUSTOMER_ALGORITHM,default=AES256"`
 }
 
 // input gets the appropriate input source. If there was any data pumped into
