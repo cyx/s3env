@@ -176,7 +176,7 @@ func persistVars() error {
 		Bucket:               aws.String(cfg.Bucket),
 		Key:                  aws.String(cfg.Key),
 		Body:                 bytes.NewReader(buf.Bytes()),
-		SSECustomerAlgorithm: aws.String(cfg.SSECustomerAlgorithm),
+		ServerSideEncryption: aws.String(cfg.ServerSideEncryption),
 	})
 
 	if err != nil {
@@ -195,7 +195,7 @@ type config struct {
 	Region    string `env:"S3ENV_AWS_REGION,required"`
 	SecretKey string `env:"S3ENV_AWS_SECRET_ACCESS_KEY,required"`
 
-	SSECustomerAlgorithm string `env:"S3ENV_AWS_SSE_CUSTOMER_ALGORITHM,default=AES256"`
+	ServerSideEncryption string `env:"S3ENV_AWS_SERVER_SIDE_ENCRYPTION,default=AES256"`
 }
 
 // input gets the appropriate input source. If there was any data pumped into
